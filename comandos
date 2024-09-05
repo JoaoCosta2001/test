@@ -1,0 +1,18 @@
+Execute o script python acima para salvar o modelo como resnet-18.pt.
+Criação do arquivo de manifesto (resnet-18.mar):
+
+Agora, crie o arquivo .mar usando o torch-model-archiver.
+
+$ torch-model-archiver --model-name resnet-18 --version 1.0 --serialized-file resnet-18.pt --export-path model-store --handler image_classifier
+$ torch-model-archiver --model-name densenet-121 --version 1.0 --serialized-file densenet-121.pt --export-path model-store --handler image_classifier
+
+$ docker build --no-cache -t torchserve-resnet:latest .
+$ docker tag torchserve-resnet:latest darkzero1234/torchserve-resnet:latest
+$ docker push darkzero1234/torchserve-resnet:latest
+
+$ docker build --no-cache -t torchserve-resnet-densenet:latest .
+$ docker tag torchserve-resnet-densenet:latest darkzero1234/torchserve-resnet-densenet:latest
+$ docker push darkzero1234/torchserve-resnet-densenet:latest
+
+$ docker stack deploy -c docker-compose.yml torchserve_stack
+
