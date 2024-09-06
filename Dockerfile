@@ -20,7 +20,6 @@ COPY config.properties .
 COPY model-store/resnet-18.mar model-store/
 COPY model-store/densenet-121.mar model-store/
 COPY handler.py .
-COPY imagenet_classes.txt .  
 
 # Exponha a porta 8080 para o TorchServe
 EXPOSE 8080

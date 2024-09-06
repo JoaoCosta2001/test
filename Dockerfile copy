@@ -1,0 +1,45 @@
+# Use the official PyTorch TorchServe image as the base
+FROM pytorch/torchserve:0.6.0-cpu
+
+# Switch to root user to install packages
+USER root
+
+# Install additional dependencies if necessary
+RUN apt-get update && apt-get install -y \
+    git \
+    && apt-get clean
+
+# Create a directory for the model server
+RUN mkdir -p /home/model-server/
+
+# Set the working directory
+WORKDIR /home/model-server/
+
+# Copy necessary files (configuration, models, handler, classes)
+COPY config.properties .
+COPY handler.py .
+COPY imagenet_classes.txt .
+
+# Copy the serialized model files
+COPY resnet-18.pt model-store/
+COPY densenet-121.pt model-store/
+
+# Package the ResNet-18 model with the custom handler (overwrite if necessary)
+RUN torch-model-archiver --model-name resnet-18 --version 1.0 \
+    --serialized-file model-store/resnet-18.pt \
+    --handler handler.py \
+    --extra-files handler.py,imagenet_classes.txt \
+    --export-path model-store 
+
+# Package the DenseNet-121 model with the custom handler (overwrite if necessary)
+RUN torch-model-archiver --model-name densenet-121 --version 1.0 \
+    --serialized-file model-store/densenet-121.pt \
+    --handler handler.py \
+    --extra-files handler.py,imagenet_classes.txt \
+    --export-path model-store
+
+# Expose the default TorchServe port
+EXPOSE 8080
+
+# Command to start TorchServe with both models
+CMD ["torchserve", "--start", "--ncs", "--models", "resnet-18=resnet-18.mar,densenet-121=densenet-121.mar", "--ts-config", "config.properties"]
